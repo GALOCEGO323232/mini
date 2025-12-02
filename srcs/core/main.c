@@ -41,7 +41,7 @@ static void	shell_loop(t_shell *shell)
 	{
 		line = readline("minishell$ ");
 		if (!line)
-			break ;
+			break ;  // ← Ctrl+D sai aqui sem liberar última AST!
 		if (*line)
 			add_history(line);
 		shell->token_list = lexer(line);
