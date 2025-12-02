@@ -6,7 +6,7 @@
 /*   By: kgagliar <kgagliar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/01 16:00:06 by kgagliar          #+#    #+#             */
-/*   Updated: 2025/12/01 16:00:08 by kgagliar         ###   ########.fr       */
+/*   Updated: 2025/12/02 15:32:48 by kgagliar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,12 +71,26 @@ static void	child_process(t_ast *node, t_shell *shell)
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
 	if (apply_redirections(node, shell) != 0)
+	{
+		// ADICIONAR ESTAS 2 LINHAS:
+		ast_free(node);
+		cleanup_shell(shell);
 		exit(EXIT_FAILURE);
+	}
 	cmd_node = get_command_node(node);
 	if (is_builtin(cmd_node))
+	{
+		// ADICIONAR ESTA LINHA:
+		ast_free(node);
 		exec_builtin_child(cmd_node, shell);
+	}
 	if (!cmd_node || !cmd_node->argv || !cmd_node->argv[0])
+	{
+		// ADICIONAR ESTAS 2 LINHAS:
+		ast_free(node);
+		cleanup_shell(shell);
 		exit(EXIT_FAILURE);
+	}
 	execute_external_cmd(cmd_node, shell);
 }
 

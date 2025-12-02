@@ -6,7 +6,7 @@
 /*   By: kgagliar <kgagliar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/01 16:00:19 by kgagliar          #+#    #+#             */
-/*   Updated: 2025/12/01 16:00:21 by kgagliar         ###   ########.fr       */
+/*   Updated: 2025/12/02 15:30:36 by kgagliar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,8 @@ int	exec_pipeline(t_ast *node, t_shell *shell)
 static void	child_pipe_process(t_ast *node, t_shell *shell, int *pipe_fds,
 		int is_left)
 {
+	int	exit_code;
+
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
 	if (is_left)
@@ -73,8 +75,11 @@ static void	child_pipe_process(t_ast *node, t_shell *shell, int *pipe_fds,
 		close(pipe_fds[1]);
 		close(pipe_fds[0]);
 	}
-	execute_ast(node, shell);
-	exit(shell->exit_status);
+	exit_code = execute_ast(node, shell);
+	// Limpa memória antes de sair do processo filho
+	ast_free(node);
+	cleanup_shell(shell);
+	exit(exit_code);
 }
 
 static int	handle_fork_error(int *pipe_fds, pid_t pid_to_wait)

@@ -6,7 +6,7 @@
 /*   By: kgagliar <kgagliar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/01 15:59:48 by kgagliar          #+#    #+#             */
-/*   Updated: 2025/12/01 15:59:51 by kgagliar         ###   ########.fr       */
+/*   Updated: 2025/12/02 15:33:11 by kgagliar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,5 +36,6 @@ int	exec_builtin_child(t_ast *node, t_shell *shell)
 	int	code;
 
 	code = exec_builtin(node, shell);
+	cleanup_shell(shell);  // ADICIONAR ESTA LINHA
 	exit(code);
 }
