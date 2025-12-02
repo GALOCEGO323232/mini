@@ -125,7 +125,7 @@ int			exec_builtin(t_ast *node, t_shell *shell);
 int			exec_builtin_child(t_ast *node, t_shell *shell);
 void		exec_external_command(t_ast *cmd, char *path, t_shell *shell);
 int			exec_pipe(t_ast *left, t_ast *right, t_shell *shell);
-int			exec_pipeline(t_ast *node, t_shell *shell);
+int			exec_pipe(t_ast *pipe_node, t_shell *shell);
 int			exec_simple_cmd(t_ast *node, t_shell *shell);
 int			exec_subshell(t_ast *node, t_shell *shell);
 int			execute_ast(t_ast *node, t_shell *shell);

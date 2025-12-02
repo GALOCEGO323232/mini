@@ -18,11 +18,19 @@ static int	handle_fork_error(int *pipe_fds, pid_t pid_to_wait);
 static int	parent_wait_and_close(pid_t pid_left, pid_t pid_right,
 				int *pipe_fds);
 
-int	exec_pipe(t_ast *left, t_ast *right, t_shell *shell)
+// No arquivo srcs/executor/exec_pipeline.c
+
+// ✅ MUDAR ASSINATURA
+int	exec_pipe(t_ast *pipe_node, t_shell *shell)
 {
 	int		pipe_fds[2];
 	pid_t	pid_left;
 	pid_t	pid_right;
+	t_ast	*left;
+	t_ast	*right;
+
+	left = pipe_node->left;
+	right = pipe_node->right;
 
 	signal(SIGINT, SIG_IGN);
 	if (pipe(pipe_fds) == -1)
@@ -31,12 +39,14 @@ int	exec_pipe(t_ast *left, t_ast *right, t_shell *shell)
 	if (pid_left == -1)
 		return (handle_fork_error(pipe_fds, 0));
 	if (pid_left == 0)
-		child_pipe_process(left, shell, pipe_fds, 1);
+	{
+		child_pipe_process(left, shell, pipe_fds, 1, pipe_node);
+	}
 	pid_right = fork();
 	if (pid_right == -1)
 		return (handle_fork_error(pipe_fds, pid_left));
 	if (pid_right == 0)
-		child_pipe_process(right, shell, pipe_fds, 0);
+		child_pipe_process(right, shell, pipe_fds, 0, pipe_node);
 	return (parent_wait_and_close(pid_left, pid_right, pipe_fds));
 }
 
@@ -44,43 +54,46 @@ int	exec_pipeline(t_ast *node, t_shell *shell)
 {
 	if (!node || node->type != NODE_PIPE)
 		return (1);
-	shell->exit_status = exec_pipe(node->left, node->right, shell);
+	shell->exit_status = exec_pipe(node, shell);
 	return (shell->exit_status);
 }
 
-static void child_pipe_process(t_ast *node, t_shell *shell, int *pipe_fds,
-        int is_left)
+static void	child_pipe_process(t_ast *node, t_shell *shell, int *pipe_fds,
+		int is_left, t_ast *full_pipe_node)
 {
-    int exit_code;
+	int	exit_code;
 
-    signal(SIGINT, SIG_DFL);
-    signal(SIGQUIT, SIG_DFL);
-    if (is_left)
-    {
-        if (dup2(pipe_fds[1], STDOUT_FILENO) == -1)
-        {
-            perror("dup2 STDOUT pipe");
-            exit(1);
-        }
-        close(pipe_fds[0]);
-        close(pipe_fds[1]);
-    }
-    else
-    {
-        if (dup2(pipe_fds[0], STDIN_FILENO) == -1)
-        {
-            perror("dup2 STDIN pipe");
-            exit(1);
-        }
-        close(pipe_fds[1]);
-        close(pipe_fds[0]);
-    }
-    exit_code = execute_ast(node, shell);
-    ast_free(node);
-    cleanup_shell(shell);
-    exit(exit_code);
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	if (is_left)
+	{
+		if (dup2(pipe_fds[1], STDOUT_FILENO) == -1)
+		{
+			perror("dup2 STDOUT pipe");
+			ast_free(full_pipe_node);  // ✅ LIBERAR AQUI
+			cleanup_shell(shell);
+			exit(1);
+		}
+		close(pipe_fds[0]);
+		close(pipe_fds[1]);
+	}
+	else
+	{
+		if (dup2(pipe_fds[0], STDIN_FILENO) == -1)
+		{
+			perror("dup2 STDIN pipe");
+			ast_free(full_pipe_node);  // ✅ LIBERAR AQUI
+			cleanup_shell(shell);
+			exit(1);
+		}
+		close(pipe_fds[1]);
+		close(pipe_fds[0]);
+	}
+	exit_code = execute_ast(node, shell);
+	ast_free(full_pipe_node);
+	cleanup_shell(shell);
+	exit(exit_code);
 }
-
 static int	handle_fork_error(int *pipe_fds, pid_t pid_to_wait)
 {
 	perror("fork");
