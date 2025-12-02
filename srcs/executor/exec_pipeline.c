@@ -48,38 +48,37 @@ int	exec_pipeline(t_ast *node, t_shell *shell)
 	return (shell->exit_status);
 }
 
-static void	child_pipe_process(t_ast *node, t_shell *shell, int *pipe_fds,
-		int is_left)
+static void child_pipe_process(t_ast *node, t_shell *shell, int *pipe_fds,
+        int is_left)
 {
-	int	exit_code;
+    int exit_code;
 
-	signal(SIGINT, SIG_DFL);
-	signal(SIGQUIT, SIG_DFL);
-	if (is_left)
-	{
-		if (dup2(pipe_fds[1], STDOUT_FILENO) == -1)
-		{
-			perror("dup2 STDOUT pipe");
-			exit(1);
-		}
-		close(pipe_fds[0]);
-		close(pipe_fds[1]);
-	}
-	else
-	{
-		if (dup2(pipe_fds[0], STDIN_FILENO) == -1)
-		{
-			perror("dup2 STDIN pipe");
-			exit(1);
-		}
-		close(pipe_fds[1]);
-		close(pipe_fds[0]);
-	}
-	exit_code = execute_ast(node, shell);
-	// Limpa memória antes de sair do processo filho
-	ast_free(node);
-	cleanup_shell(shell);
-	exit(exit_code);
+    signal(SIGINT, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
+    if (is_left)
+    {
+        if (dup2(pipe_fds[1], STDOUT_FILENO) == -1)
+        {
+            perror("dup2 STDOUT pipe");
+            exit(1);
+        }
+        close(pipe_fds[0]);
+        close(pipe_fds[1]);
+    }
+    else
+    {
+        if (dup2(pipe_fds[0], STDIN_FILENO) == -1)
+        {
+            perror("dup2 STDIN pipe");
+            exit(1);
+        }
+        close(pipe_fds[1]);
+        close(pipe_fds[0]);
+    }
+    exit_code = execute_ast(node, shell);
+    ast_free(node);
+    cleanup_shell(shell);
+    exit(exit_code);
 }
 
 static int	handle_fork_error(int *pipe_fds, pid_t pid_to_wait)

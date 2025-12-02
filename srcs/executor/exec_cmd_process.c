@@ -64,34 +64,33 @@ static void	execute_external_cmd(t_ast *cmd_node, t_shell *shell)
 	exit(126);
 }
 
-static void	child_process(t_ast *node, t_shell *shell)
+static void child_process(t_ast *node, t_shell *shell)
 {
-	t_ast	*cmd_node;
+    t_ast *cmd_node;
 
-	signal(SIGINT, SIG_DFL);
-	signal(SIGQUIT, SIG_DFL);
-	if (apply_redirections(node, shell) != 0)
-	{
-		// ADICIONAR ESTAS 2 LINHAS:
-		ast_free(node);
-		cleanup_shell(shell);
-		exit(EXIT_FAILURE);
-	}
-	cmd_node = get_command_node(node);
-	if (is_builtin(cmd_node))
-	{
-		// ADICIONAR ESTA LINHA:
-		ast_free(node);
-		exec_builtin_child(cmd_node, shell);
-	}
-	if (!cmd_node || !cmd_node->argv || !cmd_node->argv[0])
-	{
-		// ADICIONAR ESTAS 2 LINHAS:
-		ast_free(node);
-		cleanup_shell(shell);
-		exit(EXIT_FAILURE);
-	}
-	execute_external_cmd(cmd_node, shell);
+    signal(SIGINT, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
+    
+    if (apply_redirections(node, shell) != 0)
+    {
+        ast_free(node);
+        cleanup_shell(shell);
+        exit(EXIT_FAILURE);
+    }
+    
+    cmd_node = get_command_node(node);
+    if (is_builtin(cmd_node))
+    {
+        ast_free(node);
+        exec_builtin_child(cmd_node, shell);
+    }
+    if (!cmd_node || !cmd_node->argv || !cmd_node->argv[0])
+    {
+        ast_free(node);
+        cleanup_shell(shell);
+        exit(EXIT_FAILURE);
+    }
+    execute_external_cmd(cmd_node, shell);
 }
 
 static void	handle_path_error(char *cmd, char **envp)

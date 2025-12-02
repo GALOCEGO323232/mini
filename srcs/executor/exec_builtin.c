@@ -31,11 +31,11 @@ int	exec_builtin(t_ast *node, t_shell *shell)
 	return (1);
 }
 
-int	exec_builtin_child(t_ast *node, t_shell *shell)
+int exec_builtin_child(t_ast *node, t_shell *shell)
 {
-	int	code;
+    int code;
 
-	code = exec_builtin(node, shell);
-	cleanup_shell(shell);  // ADICIONAR ESTA LINHA
-	exit(code);
+    code = exec_builtin(node, shell);
+    cleanup_shell(shell);  // ✅ ADICIONAR ESTA LINHA
+    exit(code);
 }
